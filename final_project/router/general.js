@@ -29,51 +29,55 @@ public_users.post("/register", (req,res) => {
   return res.status(404).json({message: "Unable to register user."});
 });
 
+//function for Books
+function getAllBooks() {
+    return new Promise((resolve, reject) => {
+        resolve(books);
+    });
+}
+
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
-  res.send(JSON.stringify(books,null,4));
+public_users.get('/',function (req, res) 
+{
+  getAllBooks()
+  .then((books) => res.send(JSON.stringify(books,null,4)));
 });
 
 // Get book details based on ISBN
 public_users.get('/isbn/:isbn',function (req, res) {
-  const isbn = req.params.isbn;
-  res.send(books[isbn])
+      const isbn = req.params.isbn;
+      getAllBooks()
+      .then((bks)=> res.send(books[isbn]))
+      .catch(function(error) {
+        console.error('Error fetching books:', error);
+        res.status(500).send('Error fetching books with given ISBN');
+    });
  });
   
 // Get book details based on author
 public_users.get('/author/:author',function (req, res) {
-  let result_authors = [];
-  for(const [key, values] of Object.entries(books))
-  {
-    const book = Object.entries(values);
-    for(let i = 0; i < book.length ; i++){
-        if(book[i][0] == 'author' && book[i][1] == req.params.author){
-            result_authors.push(books[key]);
-            }
-        }
-    }
-    if(result_authors.length == 0){
-        return res.status(300).json({message: "Author not found"});
-    }
-    res.send(JSON.stringify(result_authors,null,4));
+    const author = req.params.author;
+    getAllBooks()
+    .then((bookEntries) => Object.values(bookEntries))
+    .then((bks) => bks.filter((book) => book.author === author))
+    .then((resultBooks) => res.send(res.send(resultBooks)))
+    .catch(function(error) {
+        console.error('Error fetching books:', error);
+        res.status(500).send('Error fetching books with the given author');
+    });
 });
 
 // Get all books based on title
 public_users.get('/title/:title',function (req, res) {
-    let result_title = [];
-    for(const [key, values] of Object.entries(books))
-    {
-      const book = Object.entries(values);
-      for(let i = 0; i < book.length ; i++){
-          if(book[i][0] == 'title' && book[i][1] == req.params.title){
-              result_title.push(books[key]);
-              }
-          }
-      }
-      if(result_title.length == 0){
-          return res.status(300).json({message: "Title not found"});
-      }
-      res.send(JSON.stringify(result_title,null,4));
+    const title = req.params.title;
+    getAllBooks()
+    .then((bookEntries) => Object.values(bookEntries))
+    .then((bks) => bks.filter((book) => book.title === title))
+    .then((resultBooks) => res.send(res.send(resultBooks)))
+    .catch(function(error) {
+        console.error('Error fetching books:', error);
+        res.status(500).send('Error fetching books with given title');
+    });
 });
 
 //  Get book review
